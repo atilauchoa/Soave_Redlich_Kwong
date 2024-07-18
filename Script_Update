@@ -1,0 +1,147 @@
+import math
+
+def print_critical_data_table():
+    """Exibe uma tabela com os valores de temperatura crítica e fator acêntrico para vários gases."""
+    print("Tabela de Temperatura Crítica e Fator Acêntrico para Vários Gases:")
+    print("{:<20} {:<30} {:<30}".format('Gás', 'Temperatura Crítica (T_c) [K]', 'Fator Acêntrico (ω)'))
+    print("="*80)
+    gases = [
+        ("Hidrogênio", 33.2, 0.20),
+        ("Metano", 190.6, 0.042),
+        ("Eteno", 282.3, 0.099),
+        ("Propano", 304.2, 0.152),
+        ("Butano", 309.2, 0.199),
+        ("Dióxido de Carbono", 304.2, 0.225),
+        ("Água", 647.1, 0.344),
+        ("Nitrógeno", 126.2, 0.037),
+        ("Oxigênio", 154.6, 0.021),
+        ("Neônio", 44.4, 0.00),
+        ("Argônio", 150.8, 0.03),
+        ("Krypton", 209.4, 0.056),
+        ("Xenônio", 289.7, 0.093),
+        ("Etano", 305.3, 0.098),
+        ("Amoníaco", 405.5, 0.250),
+        ("Cloro", 417.0, 0.124),
+        ("Metanol", 512.6, 0.563),
+        ("Ácido Acético", 553.1, 0.420)
+    ]
+    for gas, Tc, omega in gases:
+        print("{:<20} {:<30} {:<30}".format(gas, Tc, omega))
+    print("="*80)
+
+def convert_temperature(value, unit):
+    """Converte a temperatura para Kelvin"""
+    if unit == 1:  # Fahrenheit to Kelvin
+        return (value - 32) * 5/9 + 273.15
+    elif unit == 2:  # Celsius to Kelvin
+        return value + 273.15
+    elif unit == 3:  # Kelvin
+        return value
+    else:
+        raise ValueError("Unidade de temperatura inválida")
+
+def calculate_srk_pressure(V_m, T, a, b):
+    """Calcula a pressão usando a equação de SRK"""
+    R = 0.0821  # Constante universal dos gases em L atm K^-1 mol^-1
+    T_c = float(input("Digite o valor da temperatura crítica (T_c) em K: "))
+    omega = float(input("Digite o valor do fator acêntrico (ω): "))
+
+    # Calculando α(T)
+    m = 0.48 + 1.574 * omega - 0.176 * omega**2
+    alpha = (1 + m * (1 - math.sqrt(T / T_c)))**2
+
+    # Equação de SRK
+    p = (R * T) / (V_m - b) - (a * alpha) / (V_m * (V_m + b))
+    return p
+
+def main():
+    print_critical_data_table()
+
+    print("Escolha a variável de interesse para calcular usando a equação SRK:")
+    print("1 - Calcular pressão (p)")
+    print("2 - Calcular volume (V)")
+    print("3 - Calcular número de moles (n)")
+    print("4 - Calcular temperatura (T)")
+    print("5 - Calcular Constante dos Gases (R)")
+    option = int(input("Digite o número da opção: "))
+
+    if option == 1:
+        # Escolhendo a unidade de volume
+        print("Escolha a unidade para volume:")
+        print("1 - dm³")
+        print("2 - m³")
+        print("3 - L")
+        volume_unit = int(input("Digite a unidade de volume: "))
+
+        # Recebendo o valor do volume
+        V = float(input("Digite o valor do volume: "))
+        if volume_unit == 1:
+            V_m = V  # 1 dm³ = 1 L
+        elif volume_unit == 2:
+            V_m = V * 1000  # 1 m³ = 1000 L
+        elif volume_unit == 3:
+            V_m = V  # L
+        else:
+            raise ValueError("Unidade de volume inválida")
+
+        # Recebendo o valor do número de moles
+        n = float(input("Digite o valor do número de moles: "))
+        V_m /= n  # Volume molar
+
+        # Escolhendo a unidade de temperatura
+        print("Escolha a unidade para temperatura:")
+        print("1 - F°")
+        print("2 - C°")
+        print("3 - K")
+        temp_unit = int(input("Digite a unidade de temperatura: "))
+
+        # Recebendo o valor da temperatura e convertendo para Kelvin
+        T = float(input("Digite o valor da temperatura: "))
+        T = convert_temperature(T, temp_unit)
+
+        # Recebendo os valores de a e b
+        a = float(input("Digite o valor de a: "))
+        b = float(input("Digite o valor de b: "))
+
+        # Calculando a pressão usando a equação SRK
+        p = calculate_srk_pressure(V_m, T, a, b)
+        print(f"O valor de p em atm é: {p:.4f}")
+
+        # Perguntando se o usuário deseja converter a pressão para outras unidades
+        convert = input("Deseja converter a pressão para outras unidades? (S/N): ")
+        if convert.lower() == 's':
+            print("Escolha a unidade para conversão de pressão:")
+            print("1 - Pa")
+            print("2 - kPa")
+            print("3 - bar")
+            print("4 - mmHg")
+            print("5 - psi")
+            pressure_unit = int(input("Digite a unidade para conversão de pressão: "))
+
+            if pressure_unit == 1:
+                p_converted = p * 101325  # atm to Pa
+                unit = "Pa"
+            elif pressure_unit == 2:
+                p_converted = p * 101.325  # atm to kPa
+                unit = "kPa"
+            elif pressure_unit == 3:
+                p_converted = p * 1.01325  # atm to bar
+                unit = "bar"
+            elif pressure_unit == 4:
+                p_converted = p * 760  # atm to mmHg
+                unit = "mmHg"
+            elif pressure_unit == 5:
+                p_converted = p * 14.696  # atm to psi
+                unit = "psi"
+            else:
+                raise ValueError("Unidade de pressão inválida")
+
+            print(f"O valor de p em {unit} é: {p_converted:.4f}")
+        else:
+            print("Encerrando o fluxo de trabalho.")
+
+    else:
+        print("Esta opção não é suportada no fluxo de trabalho atual.")
+
+# Executando a função principal
+main()
